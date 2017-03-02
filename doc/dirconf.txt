@@ -1,0 +1,56 @@
+==============================================================================
+*dirconf.txt*                Per project configuration                  v0.1.0
+==============================================================================
+
+This plugin is for managing project specific vim config and notes ina
+directory separate from the repo dir.     
+
+This is done by making a file name from the path of the project and storing it
+in the directory pointed to by `g:dirconf_dir`.  
+
+TODO Later It is also possible to specify a project dir in `g:dirconf_lookup`
+
+USAGE                                                  *dirconf*  *dirconf-usage* 
+
+When editing a file of your project call: >
+  
+     :DirConf
+<
+to open the file with vim configuration that will be sourced whenever you edit
+a file in this project.  The name of this file can be set in: >
+     
+     let g:dirconf_vimfile = 'conf.vim'
+<
+You can also open other files in the same directory location by naming the
+file to edit: >
+     
+     :DirConf README.md
+<
+will open a `README.md` file in the same directory as the the vim file.  I use
+this for notes about directories and it is handly to map it to a brief
+shortcut: >
+
+    nmap <LocalLeader>dc :DirConf README.md
+<
+                                                                *g:dirconf_dir*
+
+All project files are stored under `g:dirconf_dir` which defaults to: >
+    
+    let g:dirconf_dir = $HOME . '/.vim/dirconf'
+<
+If the directory does not exist it is created.
+                                                            *g:dirconf_verbose*
+
+To see what happens when entering vim you can set >
+     
+    let g:dirconf_verbose = 1
+<
+which will echo the file name that is looked for.
+
+TODO                                                             *dirconf-todo*
+
+* find project root dir
+* work on windows
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:fdm=marker
