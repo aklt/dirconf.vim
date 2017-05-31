@@ -12,13 +12,12 @@
 "     let g:dirconf_dir = '/path/to/store/configurations'
 "     let g:dirconf_verbose = 0
 "     
-" TODO: iterate looking for /.git or /package.json to find project root
 " TODO: Make variables available to the sorced file like s:path, etc.
-" TODO: Rename to Cv, shortcuts CV, CD, vim, doc
-"
-"if &cp || exists("g:loaded_dirconf")
-"  finish
-"endif
+" TODO: Handle continuation lines in scripts ie /\n\s*\\/
+
+if &cp || exists("g:loaded_dirconf")
+  finish
+endif
 let g:loaded_dirconf = "v0.0.1"
 let s:keepcpo = &cpo
 set cpo&vim
@@ -32,20 +31,19 @@ if !exists('g:dirconf_verbose')
 endif
 
 if !exists('g:dirconf_join')
-  let g:dirconf_join = '%'
+  let g:dirconf_join = '#'
 endif
 
 if !exists('g:dirconf_parent_files')
-  let g:dirconf_parent_files = ['.git/config',
-                              \ 'Cargo.toml', 'configure']
+  let g:dirconf_parent_files = ['.git/config']
 endif
 
 if !isdirectory(g:dirconf_dir) && exists('*mkdir')
   call mkdir(g:dirconf_dir, 'p', 0700)
-  echomsg 'created ' . g:dirconf_dir
+  call s:Echo('dirconf.vim: created ' . g:dirconf_dir)
 endif
 
-fun! FindParentDirContainingOneOf(paths)
+fun! s:FindParentDirContainingOneOf(paths)
   let paths = a:paths
   if type(paths) != type([])
     let paths = [paths]
@@ -67,28 +65,55 @@ fun! FindParentDirContainingOneOf(paths)
   endwhile
 endfun
 
-fun! ShortDirName(dir)
+fun! s:ShortDirName(dir)
   return g:dirconf_dir . '/' . substitute(substitute(
         \ a:dir, '^' . $HOME, 'HOME', ''), '/', g:dirconf_join, 'g') 
 endfun
 
-let s:sourced = {}
+fun! s:FuncName (dir)
+  return 'func' . substitute(a:dir, '\W\+', '_', 'g')
+endfun
+
+fun! s:Echo(...)
+  if g:dirconf_verbose
+    echomsg join(a:000, ' ')
+  endif
+endfun
+
+
+let g:dirconf_sourced = {}
+let g:dirconf_current_func = ''
 
 fun! s:Check()
-  " TODO This could be sped up
-  let dir = FindParentDirContainingOneOf(g:dirconf_parent_files)
+  call s:Echo("dirconf.vim: Check")
+  let dir = s:FindParentDirContainingOneOf(g:dirconf_parent_files)
   if !empty(dir)
-    let vimFile = ShortDirName(dir) . '.vim'
-    if !has_key(s:sourced, vimFile) && filereadable(vimFile)
-      exe 'source ' . escape(vimFile, '%#')
-      " TODO Place the contents into a variable to be reevaluated for each buffer
-      " TODO join(readfile($HOME . '/.vim/dirconf/HOME%yow%debugger.html/conf.vim'), '\n')
-      let s:sourced[vimFile] = 1
-      if g:dirconf_verbose
-        echomsg 'sourced ' . vimFile
+    let confFile = s:ShortDirName(dir) . '.vim'
+    let funcName = s:FuncName(dir) 
+    if has_key(g:dirconf_sourced, funcName)
+      if g:dirconf_current_func != funcName
+        call g:dirconf_sourced[funcName]()
+        let g:dirconf_current_func = funcName
       endif
-    elseif g:dirconf_verbose
-      echomsg 'not sourcing file ' . vimFile
+      return
+    endif
+    " !has_key(g:dirconf_sourced, funcName)
+    if filereadable(confFile)
+      let filecontents = readfile(confFile)
+      let fileFunction = [   'fun! g:dirconf_sourced.' . funcName . '()' ] +
+                         \   filter(filecontents, "v:val !~ '^\s*\"'") +
+                         \ [ 'endfun' ]
+      " create function for this dir
+      call s:Echo(join(fileFunction, '\n'))
+      call execute(fileFunction)
+      call g:dirconf_sourced[funcName]()
+      if g:dirconf_verbose
+        call s:Echo('dirconf.vim: created ' . string(g:dirconf_sourced[funcName]))
+      endif
+    else
+      if g:dirconf_verbose
+        call s:Echo('dirconf.vim: not sourcing file ' . confFile)
+      endif
     endif
   endif
 endfun
@@ -98,25 +123,19 @@ augroup DirConf
   autocmd BufNewFile,BufReadPre * call <SID>Check()
 augroup END
 
-fun! s:EditDirConf(...)
-  if !empty(a:000)
-    let filename = a:000[0]
-  else
-    let filename = 'conf.vim'
-  endif
-  let dir = FindParentDirContainingOneOf(g:dirconf_parent_files)
+fun! s:EditDirConf()
+  let dir = s:FindParentDirContainingOneOf(g:dirconf_parent_files)
   if !empty(dir)
-    let dir = ShortDirName(dir)
-    if !isdirectory(dir)
-      call mkdir(dir, 'p', 0700)
-    endif
-    let dir .= '/' . filename
-    echomsg 'open ' . dir
-    exe ':vsplit ' . escape(dir, '%#')
+    let dir = s:ShortDirName(dir)
+    let dir .= '.vim'
+    let funcName = s:FuncName(dir)
+    " Remove function so it will be sourced again
+    call remove(g:dirconf_sourced, funcName)
+    exe ':vsplit ' . escape(dir, '-#%' . g:dirconf_join)
   endif
 endfun
 
-command! -nargs=* DirConf call <SID>EditDirConf(<f-args>)
+command! -nargs=0 DirConf call <SID>EditDirConf()
 
 let &cpo= s:keepcpo
 unlet s:keepcpo
