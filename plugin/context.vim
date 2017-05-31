@@ -36,7 +36,7 @@ if !exists('g:dirconf_join')
 endif
 
 if !exists('g:dirconf_parent_files')
-  let g:dirconf_parent_files = ['.git/config', 'package.json', 
+  let g:dirconf_parent_files = ['.git/config',
                               \ 'Cargo.toml', 'configure']
 endif
 
@@ -78,7 +78,7 @@ fun! s:Check()
   " TODO This could be sped up
   let dir = FindParentDirContainingOneOf(g:dirconf_parent_files)
   if !empty(dir)
-    let vimFile = ShortDirName(dir) . '/conf.vim'
+    let vimFile = ShortDirName(dir) . '.vim'
     if !has_key(s:sourced, vimFile) && filereadable(vimFile)
       exe 'source ' . escape(vimFile, '%#')
       " TODO Place the contents into a variable to be reevaluated for each buffer
