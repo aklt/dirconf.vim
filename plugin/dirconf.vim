@@ -18,7 +18,7 @@
 if &cp || exists('g:loaded_dirconf')
   finish
 endif
-let g:loaded_dirconf = 'v0.0.1'
+let g:loaded_dirconf = 'v0.2.0'
 let s:keepcpo = &cpo
 set cpo&vim
 
