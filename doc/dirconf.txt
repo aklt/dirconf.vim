@@ -40,6 +40,7 @@ To see debug info you can set >
 TODO                                                             *dirconf-todo*
 
 * work on windows
+* add implicit global variables to script, ie. script name, etc
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:fdm=marker
