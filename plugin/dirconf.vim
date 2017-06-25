@@ -1,20 +1,9 @@
-"
-" Call
-"
-"     :DirConf
-"
-" to edit the file with options for this specific dir.
-"
-" * Keep config outside of repos
-"
-" Config:
-"
-"     let g:dirconf_dir = '/path/to/store/configurations'
-"     let g:dirconf_verbose = 0
-"
-" TODO: Make variables available to the sorced file like s:path, etc.
-" TODO: Handle continuation lines in scripts ie /\n\s*\\/
-
+"===============================================================================
+" File:        dirconf.vim
+" Description: Directory specific vim configuration
+" Author:      Anders Thøgersen <anders [at] bladre.dk>
+" License:     This program is free software. It comes without any warranty.
+"===============================================================================
 if &cp || exists('g:loaded_dirconf')
   finish
 endif
@@ -155,6 +144,16 @@ fun! s:EditDirConf(...)
     exe ':vsplit ' . escape(dir, '-#%' . g:dirconf_join)
   endif
 endfun
+
+" testing
+if exists('g:dirconf_test') && g:dirconf_test
+  command! -nargs=1 FindParentDirContainingOneOf 
+        \ call s:FindParentDirContainingOneOf(<f-args>)
+  command! -nargs=1 ShortDirName call s:ShortDirName(<f-args>)
+  command! -nargs=1 FuncName call s:FuncName
+  command! -nargs=0 Check call s:Check()
+  command! -nargs=* EditDirConf call s:EditDirConf(<f-args>)
+endif
 
 command! -nargs=? DirConf call <SID>EditDirConf(<f-args>)
 
