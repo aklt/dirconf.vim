@@ -87,7 +87,8 @@ fun! s:Check()
   call s:Echo('dirconf.vim: Check')
   let dir = s:FindParentDirContainingOneOf(g:dirconf_parent_files)
   if !empty(dir)
-    let confFile = s:ShortDirName(dir) . '.vim'
+    let pathName = s:ShortDirName(dir)
+    let confFile = pathName . '.vim'
     let funcName = s:FuncName(dir) 
     if has_key(g:dirconf_sourced, funcName)
       if g:dirconf_current_func != funcName
@@ -99,8 +100,14 @@ fun! s:Check()
     " !has_key(g:dirconf_sourced, funcName)
     if filereadable(confFile)
       let filecontents = readfile(confFile)
-      let fileFunction = [   'fun! g:dirconf_sourced.' . funcName . '()' ] +
+      let fileFunction =   [ 'fun! g:dirconf_sourced.' . funcName . '()' ] +
+                         \ [ 'let DC_CpoSave = &cpo', 'set cpo&vim' ] +
+                         \ [ 'let b:did_ftplugin = 1' ] +
+                         \ [ 'let _dir = "' . dir . '"' ] +
+                         \ [ 'let _name = "' . pathName . '"' ] +
+                         \ [ 'let _file = "' . confFile . '"' ] +
                          \   filter(filecontents, "v:val !~# '^\s*\"'") +
+                         \ [ 'let &cpo = DC_CpoSave' ] +
                          \ [ 'endfun' ]
       " create function for this dir
       call s:Echo(join(fileFunction, '\n'))
@@ -119,7 +126,8 @@ endfun
 
 augroup DirConf
   autocmd!
-  autocmd BufNewFile,BufReadPre * call <SID>Check()
+  " TODO shoul we use BufReadPre instead?
+  autocmd BufNewFile,BufRead * call <SID>Check()
 augroup END
 
 fun! s:EditDirConf(...)
