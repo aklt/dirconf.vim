@@ -10,9 +10,9 @@ When editing a file of your project call: >
   
     :DirConf
 <
-to open a file with vim configuration that will be executed whenever you edit
-a file in this project.  Optionally you can specify a file suffix of the file
-to open: >
+to open the context file with vim configuration that will be executed whenever
+you edit a file in this project.  Optionally you can specify a file suffix of
+the file to open: >
 
     :DirConf md
 <
@@ -37,6 +37,21 @@ To see debug info you can set >
      
     let g:dirconf_verbose = 1
 <
+Description ~
+
+The first time a file is edited in a context dir that has a corresponding
+context file it is evaluated and a function is created from its contents
+giving it some context: >
+
+    echomsg 'a:dir is ' . a:dir
+    echomsg 'a:name is ' . a:name
+    echomsg 'a:file is ' . a:file
+    let reload_eagerly = 1
+<
+The above variables are all defined and the user is expected to set
+`reload_eagerly` to force evaluation of the declarations each time a buffer
+with this context function becomes active.
+
 TODO                                                             *dirconf-todo*
 
 * work on windows

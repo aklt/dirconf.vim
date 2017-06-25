@@ -81,6 +81,7 @@ fun! s:Echo(...)
 endfun
 
 let g:dirconf_sourced = {}
+let g:dirconf_eager = {}
 let g:dirconf_current_func = ''
 
 fun! s:Check()
@@ -91,8 +92,9 @@ fun! s:Check()
     let confFile = pathName . '.vim'
     let funcName = s:FuncName(dir) 
     if has_key(g:dirconf_sourced, funcName)
-      if g:dirconf_current_func != funcName
-        call g:dirconf_sourced[funcName]()
+      if g:dirconf_current_func != funcName ||
+            \ (has_key(g:dirconf_eager, funcName) && g:dirconf_eager[funcName])
+        call g:dirconf_sourced[funcName](dir, pathName, confFile)
         let g:dirconf_current_func = funcName
       endif
       return
@@ -100,21 +102,23 @@ fun! s:Check()
     " !has_key(g:dirconf_sourced, funcName)
     if filereadable(confFile)
       let filecontents = readfile(confFile)
-      let fileFunction =   [ 'fun! g:dirconf_sourced.' . funcName . '()' ] +
-                         \ [ 'let DC_CpoSave = &cpo', 'set cpo&vim' ] +
+      let fileFunction =   [ 'fun! g:dirconf_sourced.' . funcName . 
+                         \   '(dir, name, file)' ] +
+                         \ [ 'let _DC_CpoSave = &cpo', 'set cpo&vim' ] +
                          \ [ 'let b:did_ftplugin = 1' ] +
-                         \ [ 'let _dir = "' . dir . '"' ] +
-                         \ [ 'let _name = "' . pathName . '"' ] +
-                         \ [ 'let _file = "' . confFile . '"' ] +
+                         \ [ 'let reload_eagerly = 0' ] +
                          \   filter(filecontents, "v:val !~# '^\s*\"'") +
-                         \ [ 'let &cpo = DC_CpoSave' ] +
+                         \ [ 'let &cpo = _DC_CpoSave' ] +
+                         \ [ 'return reload_eagerly' ] +
                          \ [ 'endfun' ]
       " create function for this dir
       call s:Echo(join(fileFunction, '\n'))
       call execute(fileFunction)
-      call g:dirconf_sourced[funcName]()
+      let g:dirconf_eager[funcName] =
+            \ g:dirconf_sourced[funcName](dir, pathName, confFile)
       if g:dirconf_verbose
-        call s:Echo('dirconf.vim: created ' . string(g:dirconf_sourced[funcName]))
+        call s:Echo('dirconf.vim: created ' . 
+              \ string(g:dirconf_sourced[funcName]))
       endif
     else
       if g:dirconf_verbose
