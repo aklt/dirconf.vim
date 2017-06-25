@@ -1,8 +1,8 @@
-" 
-" Call 
+"
+" Call
 "
 "     :DirConf
-" 
+"
 " to edit the file with options for this specific dir.
 "
 " * Keep config outside of repos
@@ -11,7 +11,7 @@
 "
 "     let g:dirconf_dir = '/path/to/store/configurations'
 "     let g:dirconf_verbose = 0
-"     
+"
 " TODO: Make variables available to the sorced file like s:path, etc.
 " TODO: Handle continuation lines in scripts ie /\n\s*\\/
 
@@ -67,7 +67,7 @@ endfun
 
 fun! s:ShortDirName(dir)
   return g:dirconf_dir . '/' . substitute(substitute(
-        \ a:dir, '^' . $HOME, 'HOME', ''), '/', g:dirconf_join, 'g') 
+        \ a:dir, '^' . $HOME, 'HOME', ''), '/', g:dirconf_join, 'g')
 endfun
 
 fun! s:FuncName (dir)
@@ -90,7 +90,7 @@ fun! s:Check()
   if !empty(dir)
     let pathName = s:ShortDirName(dir)
     let confFile = pathName . '.vim'
-    let funcName = s:FuncName(dir) 
+    let funcName = s:FuncName(dir)
     if has_key(g:dirconf_sourced, funcName)
       if g:dirconf_current_func != funcName ||
             \ (has_key(g:dirconf_eager, funcName) && g:dirconf_eager[funcName])
@@ -99,15 +99,19 @@ fun! s:Check()
       endif
       return
     endif
-    " !has_key(g:dirconf_sourced, funcName)
     if filereadable(confFile)
-      let filecontents = readfile(confFile)
-      let fileFunction =   [ 'fun! g:dirconf_sourced.' . funcName . 
+      " Magically wrap continuation lines
+      let filecontents = split(
+            \   substitute(
+            \     join(readfile(confFile), "\n"),
+            \   '\n\s*\\', ' ', 'g'),
+            \ '\n')
+      let fileFunction =   [ 'fun! g:dirconf_sourced.' . funcName .
                          \   '(dir, name, file)' ] +
                          \ [ 'let _DC_CpoSave = &cpo', 'set cpo&vim' ] +
                          \ [ 'let b:did_ftplugin = 1' ] +
                          \ [ 'let reload_eagerly = 0' ] +
-                         \   filter(filecontents, "v:val !~# '^\s*\"'") +
+                         \   filecontents +
                          \ [ 'let &cpo = _DC_CpoSave' ] +
                          \ [ 'return reload_eagerly' ] +
                          \ [ 'endfun' ]
@@ -117,7 +121,7 @@ fun! s:Check()
       let g:dirconf_eager[funcName] =
             \ g:dirconf_sourced[funcName](dir, pathName, confFile)
       if g:dirconf_verbose
-        call s:Echo('dirconf.vim: created ' . 
+        call s:Echo('dirconf.vim: created ' .
               \ string(g:dirconf_sourced[funcName]))
       endif
     else
