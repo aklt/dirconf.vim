@@ -7,7 +7,7 @@
 if &compatible || exists('g:loaded_dirconf')
   finish
 endif
-let g:loaded_dirconf = 'v0.2.0'
+let g:loaded_dirconf = 'v0.3.0'
 let s:keepcpo = &cpoptions
 set cpoptions&vim
 
