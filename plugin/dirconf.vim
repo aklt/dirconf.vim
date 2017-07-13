@@ -86,7 +86,7 @@ fun! s:Check()
             \  g:dirconf_eager[l:funcName] == 1)
         let g:dirconf_eager[l:funcName] = g:dirconf_sourced[l:funcName](l:dir, l:pathName, l:confFile)
         let g:dirconf_current_func = l:funcName
-        echomsg 'dirconf.vim: ran function ' . l:funcName
+        call s:Echo('dirconf.vim: ran function ' . l:funcName)
       endif
       return
     endif
