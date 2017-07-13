@@ -1,61 +1,79 @@
 ==============================================================================
-*dirconf.txt*             Project configuration and notes                 v0.2.0
+*dirconf.txt*            Project configuration and notes                v0.3.0
 ==============================================================================
-USAGE                                                  *dirconf*  *dirconf-usage* 
+                                                                     *dirconf*
+This plugin is for maintaining project specific configuration and keeping
+notes associated with the project.  The configuration and notes are kept
+outside of the project source directory.
 
-This plugin is for managing project specific vim configuration and notes in a
-directory separate from the project directory. 
+Usage ~
 
-When editing a file of your project call: >
-  
+When editing a file in a project call: >
+
     :DirConf
 <
-to open the context file with vim configuration that will be executed whenever
-you edit a file in this project.  Optionally you can specify a file suffix of
-the file to open: >
+to open the context file.  This file should contain vim configuration which
+will be executed when you edit a file in this project.
+
+You can specify a file suffix of the file to open: >
 
     :DirConf md
 <
-to keep notes about a project separate from the project source code.
-     
+will open a context file with a `.md` extension instead of `.vim`.  I find it
+useful to map the above commands to `:DC` and `:DD` to edit project
+configuration project notes respectively: >
+
+    nnoremap :DC :DirConf<CR>
+    nnoremap :DD :DirConf md<CR>
+<
+                                                             *dirconf-context*
+The context file ~
+
+The context file can contain arbitrary vim configuration.  It will be
+evaluated as a vim function when a file in the corresponding project is
+opened.  Within it there is access to these predefined variables:
+
+  *a:dir*    the directory where dirconf context files are stored
+  *a:name*   the context file basename
+  *a:file*   the context file name with `.vim` suffix
+
+if the context file sets `reload_eagerly` to 1: >
+
+    let reload_eagerly = 1
+<
+the function created from the context file will be evaluated each time the
+buffer is entered.  This is useful to set global configuration variables for a
+project that are different for another file in a different buffer.
+
+                                                              *dirconf-config*
+Configuration ~
+
 The project root directory is determined by searching backwards from the file
 path until one of the files in `g:dirconf_parent_files` is found.  It defaults
 to: >
 
-    let g:dirconf_parent_files = ['.git/config'] 
+    let g:dirconf_parent_files = ['.git/config']
 <
-                                                                *g:dirconf_dir*
+When one of these files is found in a directory it becomes the root directory
+and all files beneath it will share the same dirconf context file.
 
-All project files are stored under `g:dirconf_dir` which defaults to: >
-    
+                                                               *g:dirconf_dir*
+
+All files edited through `:DirConf` are stored under `g:dirconf_dir` which
+defaults to: >
+
     let g:dirconf_dir = $HOME . '/.vim/dirconf'
 <
 If the directory does not exist it is created.
-                                                            *g:dirconf_verbose*
+                                                           *g:dirconf_verbose*
 
 To see debug info you can set >
-     
+
     let g:dirconf_verbose = 1
 <
-Description ~
-
-The first time a file is edited in a context dir that has a corresponding
-context file it is evaluated and a function is created from its contents
-giving it some context: >
-
-    echomsg 'a:dir is ' . a:dir
-    echomsg 'a:name is ' . a:name
-    echomsg 'a:file is ' . a:file
-    let reload_eagerly = 1
-<
-The above variables are all defined and the user is expected to set
-`reload_eagerly` to force evaluation of the declarations each time a buffer
-with this context function becomes active.
-
-TODO                                                             *dirconf-todo*
+TODO                                                            *dirconf-todo*
 
 * work on windows
-* add implicit global variables to script, ie. script name, etc
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:fdm=marker
