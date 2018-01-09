@@ -5,7 +5,7 @@
 " License:     This program is free software. It comes without any warranty.
 "===============================================================================
 if &compatible || exists('g:loaded_dirconf')
-  finish
+  " finish
 endif
 let g:loaded_dirconf = 'v0.3.0'
 let s:keepcpo = &cpoptions
@@ -97,7 +97,7 @@ fun! s:Check()
             \     join(readfile(l:confFile), "\n"),
             \   '\n\s*\\', ' ', 'g'),
             \ '\n')
-      let l:fileFunction =   [ 'fun! g:dirconf_sourced.' . l:funcName .
+      let l:fileFunction = [ 'fun! g:dirconf_sourced.' . l:funcName .
                          \   '(dir, name, file)' ] +
                          \ [ 'let _DC_CpoSave = &cpo', 'set cpo&vim' ] +
                          \ [ 'let b:did_ftplugin = 1' ] +
@@ -156,7 +156,17 @@ if exists('g:dirconf_test') && g:dirconf_test
   command! -nargs=* EditDirConf call s:EditDirConf(<f-args>)
 endif
 
-command! -nargs=? DirConf call <SID>EditDirConf(<f-args>)
+fun! s:DirConfComplete(arglead, cmdline, cursorpos)
+  let l:glob = a:arglead
+  if !empty(l:glob)
+    let l:glob = '*' . l:glob . '*'
+  else
+    let l:glob = '*'
+  endif
+  return map(globpath(g:dirconf_dir, l:glob, 0, 1), "substitute(v:val, '^.*#\\([^#]\\+\\)$', '\\1', '')")
+endfun
+
+command! -complete=customlist,s:DirConfComplete -nargs=? DirConf call <SID>EditDirConf(<f-args>)
 
 let &cpoptions = s:keepcpo
 unlet s:keepcpo
