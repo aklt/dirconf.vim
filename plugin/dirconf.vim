@@ -5,7 +5,7 @@
 " License:     This program is free software. It comes without any warranty.
 "===============================================================================
 if &compatible || exists('g:loaded_dirconf')
-  " finish
+  finish
 endif
 let g:loaded_dirconf = 'v0.3.0'
 let s:keepcpo = &cpoptions
@@ -125,7 +125,7 @@ endfun
 
 augroup DirConf
   autocmd!
-  autocmd BufEnter * call <SID>Check()
+  autocmd BufReadPre * call <SID>Check()
 augroup END
 
 fun! s:EditDirConf(...)
