@@ -2,9 +2,10 @@
 *dirconf.txt*            Project configuration and notes                v0.3.0
 ==============================================================================
                                                                      *dirconf*
-This plugin is for maintaining project specific configuration and keeping
-notes associated with the project.  The configuration and notes are kept
-outside of the project source directory.
+
+This plugin is for having different configurations for different projects.  If
+you access different repositories that require different options and
+configurations for vim, this plugin may be for you!
 
 Usage ~
 
@@ -13,15 +14,18 @@ When editing a file in a project call: >
     :DirConf
 <
 to open the context file.  This file should contain vim configuration which
-will be executed when you edit a file in this project.
+will be executed right before you begin editing a file in this project.
 
-You can specify a file suffix of the file to open: >
+If the first argument to DirConf is a file suffix, a file of this type is
+opened, for example >
 
     :DirConf md
 <
-will open a context file with a `.md` extension instead of `.vim`.  I find it
-useful to map the above commands to `:DC` and `:DD` to edit project
-configuration project notes respectively: >
+will open a context file with a `.md` extension instead of `.vim`. This is
+useful for opening corresponding documentation about the project.
+
+I have mapped `:DC` and `:DD` to edit either the project configuration or
+documentation: >
 
     nnoremap :DC :DirConf<CR>
     nnoremap :DD :DirConf md<CR>
