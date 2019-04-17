@@ -4,9 +4,9 @@
 " Author:      Anders Thøgersen <anders [at] bladre.dk>
 " License:     This program is free software. It comes without any warranty.
 "===============================================================================
-if &compatible || exists('g:loaded_dirconf')
-  finish
-endif
+" if &compatible || exists('g:loaded_dirconf')
+"   finish
+" endif
 let g:loaded_dirconf = 'v0.3.0'
 let s:keepcpo = &cpoptions
 set cpoptions&vim
@@ -56,7 +56,7 @@ endfun
 
 fun! s:ShortDirName(dir)
   return g:dirconf_dir . '/' . substitute(substitute(
-        \ a:dir, '^' . $HOME, 'HOME', ''), '/', g:dirconf_join, 'g')
+        \ a:dir, '^' . escape($HOME, '\\'), 'HOME', ''), '\\\|/', g:dirconf_join, 'g')
 endfun
 
 fun! s:FuncName (dir)
@@ -70,7 +70,7 @@ fun! s:Echo(...)
 endfun
 
 let g:dirconf_sourced = {}
-let g:dirconf_eager = {}
+let g:dirconf_reload_eagerly = {}
 let g:dirconf_current_func = ''
 
 fun! s:Check()
@@ -82,9 +82,9 @@ fun! s:Check()
     let l:funcName = s:FuncName(l:dir)
     if has_key(g:dirconf_sourced, l:funcName)
       if g:dirconf_current_func != l:funcName ||
-            \ (has_key(g:dirconf_eager, l:funcName) &&
-            \  g:dirconf_eager[l:funcName] == 1)
-        let g:dirconf_eager[l:funcName] = g:dirconf_sourced[l:funcName](l:dir, l:pathName, l:confFile)
+            \ (has_key(g:dirconf_reload_eagerly, l:funcName) &&
+            \  g:dirconf_reload_eagerly[l:funcName] == 1)
+        let g:dirconf_reload_eagerly[l:funcName] = g:dirconf_sourced[l:funcName](l:dir, l:pathName, l:confFile)
         let g:dirconf_current_func = l:funcName
         call s:Echo('dirconf.vim: ran function ' . l:funcName)
       endif
@@ -109,7 +109,7 @@ fun! s:Check()
       " create function for this dir
       call s:Echo(join(l:fileFunction, '\n'))
       call execute(l:fileFunction)
-      let g:dirconf_eager[l:funcName] =
+      let g:dirconf_reload_eagerly[l:funcName] =
             \ g:dirconf_sourced[l:funcName](l:dir, l:pathName, l:confFile)
       if g:dirconf_verbose
         call s:Echo('dirconf.vim: created ' .
