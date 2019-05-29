@@ -4,9 +4,9 @@
 " Author:      Anders Thøgersen <anders [at] bladre.dk>
 " License:     This program is free software. It comes without any warranty.
 "===============================================================================
-" if &compatible || exists('g:loaded_dirconf')
-"   finish
-" endif
+if &compatible || exists('g:loaded_dirconf')
+  finish
+endif
 let g:loaded_dirconf = 'v0.3.0'
 let s:keepcpo = &cpoptions
 set cpoptions&vim
