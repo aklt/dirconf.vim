@@ -56,7 +56,7 @@ The project root directory is determined by searching backwards from the file
 path until one of the files in `g:dirconf_parent_files` is found.  It defaults
 to: >
 
-    let g:dirconf_parent_files = ['.git/config']
+    let g:dirconf_parent_files = ['.git/config', '.root']
 <
 When one of these files is found in a directory it becomes the root directory
 and all files beneath it will share the same dirconf context file.

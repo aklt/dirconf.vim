@@ -24,7 +24,7 @@ if !exists('g:dirconf_join')
 endif
 
 if !exists('g:dirconf_parent_files')
-  let g:dirconf_parent_files = ['.git/config']
+  let g:dirconf_parent_files = ['.git/config', '.root']
 endif
 
 if !isdirectory(g:dirconf_dir) && exists('*mkdir')
@@ -55,8 +55,10 @@ fun! s:FindParentDirContainingOneOf(paths)
 endfun
 
 fun! s:ShortDirName(dir)
-  return g:dirconf_dir . '/' . substitute(substitute(
-        \ a:dir, '^' . escape($HOME, '\\'), 'HOME', ''), '\\\|/', g:dirconf_join, 'g')
+  return g:dirconf_dir . '/' . substitute(substitute(substitute(
+        \ a:dir, '^' . escape($HOME, '\\'), 'HOME', ''),
+        \ '\\\|/', g:dirconf_join, 'g'),
+        \  '^\(\w\):', '\1_', '')
 endfun
 
 fun! s:FuncName (dir)
