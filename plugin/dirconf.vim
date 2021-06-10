@@ -27,6 +27,12 @@ if !exists('g:dirconf_parent_files')
   let g:dirconf_parent_files = ['.git/config', '.root']
 endif
 
+fun! s:Echo(...)
+  if g:dirconf_verbose
+    echomsg join(a:000, ' ')
+  endif
+endfun
+
 if !isdirectory(g:dirconf_dir) && exists('*mkdir')
   call mkdir(g:dirconf_dir, 'p', 0700)
   call s:Echo('dirconf.vim: created ' . g:dirconf_dir)
@@ -63,12 +69,6 @@ endfun
 
 fun! s:FuncName (dir)
   return 'func' . substitute(a:dir, '\W\+', '_', 'g')
-endfun
-
-fun! s:Echo(...)
-  if g:dirconf_verbose
-    echomsg join(a:000, ' ')
-  endif
 endfun
 
 let g:dirconf_sourced = {}
