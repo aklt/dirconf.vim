@@ -47,7 +47,7 @@ fun! s:FindParentDirContainingOneOf(paths)
   let l:nextdir = expand(l:expandDir)
   let l:dir = ''
   let l:path = ''
-  while l:dir != l:nextdir && !filereadable(l:path)
+  while l:dir != l:nextdir
     let l:dir = l:nextdir
     for l:file in l:paths
       let l:path = l:dir . '/' . l:file
